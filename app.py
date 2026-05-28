@@ -3,7 +3,6 @@ tapdata ingestion API
 Receives JSON via a secured POST endpoint and pushes it to FileMaker via OData.
 """
 
-import json
 import logging
 import os
 from base64 import b64encode
@@ -109,11 +108,9 @@ async def ingest(
             detail="Request body must be valid JSON.",
         )
 
-    # Serialize the payload to store in FM
-    json_string = json.dumps(body, ensure_ascii=False)
-
-    # Build the OData record payload
-    fm_record: dict = {FM_JSON_FIELD: json_string}
+    # Build the OData record payload — pass the dict directly so FM receives
+    # a JSON object rather than a pre-serialized string (avoids type error 8309)
+    fm_record: dict = {FM_JSON_FIELD: body}
     if FM_SOURCE_FIELD:
         fm_record[FM_SOURCE_FIELD] = request.headers.get("X-Source", "api")
 
